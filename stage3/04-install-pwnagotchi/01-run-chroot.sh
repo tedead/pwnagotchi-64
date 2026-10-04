@@ -12,7 +12,8 @@ cd /opt
 rm -r lg.zip lg/
 
 if [ ! -d pwnagotchi ]; then
-    git clone https://github.com/jayofelony/pwnagotchi.git
+    # this fork (AI mode), not upstream; override PWN_REPO/PWN_BRANCH to build another one
+    git clone --branch "${PWN_BRANCH:-ai-mode}" "${PWN_REPO:-https://github.com/tedead/pwnagotchi-64.git}" pwnagotchi
     cd pwnagotchi/
 else
     cd /opt/pwnagotchi/
@@ -35,7 +36,8 @@ export PATH="/root/.cargo/bin:$PATH"
 source /root/.profile
 source /root/.cargo/env
 pip3 cache purge
-pip3 install . --no-cache-dir
+# [ai] pulls in numpy/gymnasium/stable-baselines3/torch so [ai] enabled = true works out of the box
+pip3 install '.[ai]' --no-cache-dir
 deactivate
 
 ln -sf /opt/.pwn/bin/pwnagotchi /usr/bin/pwnagotchi

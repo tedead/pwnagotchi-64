@@ -31,7 +31,7 @@ enabled = true
 backup_location = "/etc/pwnagotchi/backups"
 
 [main.plugins.auto-update]
-enabled = true
+enabled = false  # off in this fork: it would replace it with upstream releases
 install = true
 interval = 1
 token = "" # Create a personal access token (classic) with scope set to public_repo to use the GitHub API
