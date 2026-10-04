@@ -5,12 +5,15 @@ import logging
 import pwnagotchi
 import pwnagotchi.utils as utils
 import pwnagotchi.mesh.wifi as wifi
+from pwnagotchi.ai.reward import RewardFunction
 
 
 class Epoch(object):
     def __init__(self, config):
         self.epoch = 0
         self.config = config
+        # the reward only feeds the AI, skip the work (and the log field) when it's off
+        self._reward = RewardFunction() if config.get('ai', {}).get('enabled', False) else None
         # how many consecutive epochs with no activity
         self.inactive_for = 0
         # how many consecutive epochs with activity
@@ -203,6 +206,9 @@ class Epoch(object):
             'temperature': temp
         }
 
+        if self._reward is not None:
+            self._epoch_data['reward'] = self._reward(self.epoch + 1, self._epoch_data)
+
         self._epoch_data_ready.set()
 
         logging.info("[epoch %d] duration=%s slept_for=%s blind=%d sad=%d bored=%d inactive=%d active=%d peers=%d tot_bond=%.2f "
@@ -226,7 +232,7 @@ class Epoch(object):
                          self.num_shakes,
                          cpu * 100,
                          mem * 100,
-                         temp,))
+                         temp,) + (" reward=%s" % self._epoch_data['reward'] if self._reward is not None else ""))
 
         self.epoch += 1
         self.epoch_started = now

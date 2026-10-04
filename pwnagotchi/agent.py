@@ -16,13 +16,14 @@ from pwnagotchi.automata import Automata
 from pwnagotchi.log import LastSession
 from pwnagotchi.bettercap import Client
 from pwnagotchi.mesh.utils import AsyncAdvertiser
+from pwnagotchi.ai.train import AsyncTrainer
 from pwnagotchi.strategy import Strategy
 from pwnagotchi.cache import CacheManager
 
 RECOVERY_DATA_FILE = '/root/.pwnagotchi-recovery'
 
 
-class Agent(Client, Automata, AsyncAdvertiser):
+class Agent(Client, Automata, AsyncAdvertiser, AsyncTrainer):
     def __init__(self, view, config, keypair):
         Client.__init__(self,
                         "127.0.0.1" if "hostname" not in config['bettercap'] else config['bettercap']['hostname'],
@@ -32,6 +33,7 @@ class Agent(Client, Automata, AsyncAdvertiser):
                         "pwnagotchi" if "password" not in config['bettercap'] else config['bettercap']['password'])
         Automata.__init__(self, config, view)
         AsyncAdvertiser.__init__(self, config, view, keypair)
+        AsyncTrainer.__init__(self, config)
 
         self._started_at = time.time()
         self._current_channel = 0
@@ -139,6 +141,7 @@ class Agent(Client, Automata, AsyncAdvertiser):
                 time.sleep(1)
 
     def start(self):
+        self.start_ai()
         self._wait_bettercap()
         self.setup_events()
         self.set_starting()
@@ -196,7 +199,9 @@ class Agent(Client, Automata, AsyncAdvertiser):
         # Update strategy with latest access points
         self._strategy.on_wifi_update(self, aps)
         # Select next channels to scan based on strategy
-        next_channels = self._strategy.select_next_channels(self, aps)
+        # when the AI is driving, it owns personality.channels (the heuristic would overwrite its policy)
+        if not self.ai_active():
+            self._strategy.select_next_channels(self, aps)
         self._epoch.observe(aps, list(self._peers.values()))
         return self._access_points
 

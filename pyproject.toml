@@ -31,6 +31,9 @@ classifiers = [
     'Environment :: Console',
 ]
 
+[project.optional-dependencies]
+ai = ["numpy", "gymnasium", "stable-baselines3"]
+
 [tool.setuptools.dynamic]
 version = {attr = "pwnagotchi.__version__"}
 

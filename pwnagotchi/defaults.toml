@@ -149,6 +149,25 @@ path-debug = "/etc/pwnagotchi/log/pwnagotchi-debug.log"
 enabled = true
 size = "10M"
 
+# Reinforcement-learning mode (A2C). Off by default: it needs the optional deps
+# (pip install 'pwnagotchi[ai]'), is heavy on a Pi, and its constant channel/timing
+# changes were what destabilised the Wi-Fi firmware. When on, it replaces the
+# channel strategy and drives the [personality] parameters.
+[ai]
+enabled = false
+path = "/root/brain.nn"
+laziness = 0.1
+epochs_per_episode = 50
+
+[ai.params]
+gamma = 0.99
+n_steps = 1
+vf_coef = 0.25
+ent_coef = 0.01
+max_grad_norm = 0.5
+learning_rate = 0.001
+verbose = 1
+
 [personality]
 advertise = true
 deauth = true

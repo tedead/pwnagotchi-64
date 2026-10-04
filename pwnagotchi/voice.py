@@ -60,6 +60,11 @@ class Voice:
             self._('I\'m bored ...'),
             self._('Let\'s go for a walk!')])
 
+    def on_ai_ready(self):
+        return random.choice([
+            self._('AI ready.'),
+            self._('The neural network is ready.')])
+
     def on_motivated(self, reward):
         return random.choice([
             self._('This is the best day of my life!'),
