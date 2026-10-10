@@ -1,4 +1,20 @@
 # Pwnagotchi
+
+> **This is a modified fork** of [jayofelony/pwnagotchi](https://github.com/jayofelony/pwnagotchi), which is itself based on [evilsocket's pwnagotchi](https://github.com/evilsocket/pwnagotchi). It is not the official project and is not endorsed by its authors.
+>
+> **What's different here:** the `ai-mode` branch (the default) restores the reinforcement-learning AI that upstream removed, as an **opt-in** feature that is **off by default**. Turn it on in `/etc/pwnagotchi/config.toml`:
+>
+> ```toml
+> [ai]
+> enabled = true
+> ```
+>
+> The AI needs extra Python packages (`pip install 'pwnagotchi[ai]'`), is included in images built from this branch, and is **experimental**: upstream removed it because it destabilised the Wi-Fi firmware, and it has only been tried on one Raspberry Pi 4. Turn it off again if your Wi-Fi chip starts crashing.
+>
+> Images built from this branch also boot by partition label rather than PARTUUID, use a CPU-only PyTorch, and **do not auto-update from upstream** (that would replace this fork). The `noai` branch is the AI-free version this was started from.
+>
+> To build an image yourself, see [Building an image](#building-an-image). This fork is licensed under the same GPLv3 as upstream; see [LICENSE.md](LICENSE.md). All credit for the original work goes to the upstream authors.
+
 This is the main source for all forks:
 - RPiZeroW (32bit) older versions work, no more new releases as it now more a legacy device
 - RPiZero2W, RPi3, RPi4, RPi5 (64bit)
@@ -36,6 +52,40 @@ https://pwnagotchi.org
 | Website   | [pwnagotchi.org](https://pwnagotchi.org/)                  |
 | Chat      | [discord](https://discord.gg/PGgnzFbz4M) |
 | Subreddit | [r/pwnagotchi](https://www.reddit.com/r/pwnagotchi/)     |
+
+## Building an image
+
+Images are built with [pi-gen](https://github.com/RPi-Distro/pi-gen) on **Linux** (Ubuntu/Debian, or Ubuntu under WSL2 on Windows). Work inside the Linux filesystem (`~`), not `/mnt/c`. Plan for about 20 GB of free disk and a few hours.
+
+```bash
+sudo apt-get update && sudo apt-get install -y make git quilt qemu-user-static debootstrap zerofree libarchive-tools curl pigz arch-test qemu-utils qemu-system-arm qemu-user gcc-aarch64-linux-gnu debhelper dh-sequence-dkms dpkg-dev parted zip dosfstools
+```
+
+Check that ARM emulation is registered (this should print `qemu-aarch64`):
+
+```bash
+ls /proc/sys/fs/binfmt_misc/ | grep -i aarch64
+```
+
+Get this branch, its submodules, and put pi-gen on the branch the Makefile expects:
+
+```bash
+git clone -b ai-mode https://github.com/tedead/pwnagotchi-64.git && cd pwnagotchi-64 && make submodules
+cd pi-gen-64bit && git checkout arm64 && git pull && cd ..
+```
+
+Build the 64-bit image (Raspberry Pi 3/4/5 and Zero 2 W):
+
+```bash
+make 64bit 2>&1 | tee ~/build.log
+```
+
+The finished `.img.xz` is written to `~/images`. Flash it with Raspberry Pi Imager ("Use custom") or balenaEtcher.
+
+Notes:
+- The image build clones **this** repo (`ai-mode`) from GitHub, so push your changes before building. Override with `PWN_REPO` / `PWN_BRANCH` to build another fork or branch.
+- The submodules (pi-gen, bettercap, pwngrid, nexmon) still come from the upstream author's repositories; they are build tooling and the network/Wi-Fi components, not the pwnagotchi code.
+- AI mode is **off by default** in the built image. See the top of this README to enable it.
 
 ## License
 
