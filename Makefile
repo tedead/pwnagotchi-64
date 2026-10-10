@@ -70,6 +70,16 @@ nexmon-dkms:
 	cd $(NEXMON_DKMS_DIR) && dh_clean && git checkout -- dkms.conf
 	@echo "built $$(ls $(NEXMON_DKMS_OUT)/brcmfmac-nexmon-dkms_*.deb)"
 
+# pi-gen sizes the image's root filesystem from the files' *apparent* size plus a
+# 20% + 200MB margin. A tree with many small files (the python venv) takes more
+# real disk than that - every file rounds up to a 4KB block - so the filesystem
+# filled up while apt updated its lists inside the image ("No space left on
+# device", stage export-image/02-set-sources). Give it 1.5GB of headroom instead;
+# the partition is grown to the whole drive on first boot anyway and the free
+# space compresses to almost nothing. The sed only matches pi-gen's original line,
+# so running it repeatedly is harmless.
+PIGEN_MARGIN_FIX := sed -i 's|200 \* 1024 \* 1024|1536 * 1024 * 1024|'
+
 NEXMON_DKMS_REPO := jayofelony/brcmfmac-nexmon-dkms
 
 # Publish the built DKMS package as a GitHub release on the packaging repo.
@@ -108,6 +118,7 @@ headless: nexmon-dkms
 	[ -d pi-gen-64bit ] || git clone --branch arm64 "https://github.com/jayofelony/pi-gen.git" pi-gen-64bit
 	[ -d pi-gen-64bit ] && cd pi-gen-64bit && git pull
 	rm -rf pi-gen-64bit/stage2/EXPORT_IMAGE
+	$(PIGEN_MARGIN_FIX) pi-gen-64bit/export-image/prerun.sh
 	sed -i "s|WORK_DIR=.*|WORK_DIR=\"$(BUILD_HOME)/work-64bit\"|" config-headless
 	sed -i "s|DEPLOY_DIR=.*|DEPLOY_DIR=\"$(IMAGE_DIR)\"|" config-headless
 	sudo ./pi-gen-64bit/build.sh -c config-headless
@@ -119,6 +130,7 @@ headless: nexmon-dkms
 	[ -d pi-gen-32bit ] || git clone "https://github.com/jayofelony/pi-gen.git" pi-gen-32bit
 	[ -d pi-gen-32bit ] && cd pi-gen-32bit && git pull
 	rm -rf pi-gen-32bit/stage2/EXPORT_IMAGE
+	$(PIGEN_MARGIN_FIX) pi-gen-32bit/export-image/prerun.sh
 	sed -i "s|WORK_DIR=.*|WORK_DIR=\"$(BUILD_HOME)/work-32bit\"|" config-32bit
 	sed -i "s|DEPLOY_DIR=.*|DEPLOY_DIR=\"$(IMAGE_DIR)\"|" config-32bit
 	sudo ./pi-gen-32bit/build.sh -c config-32bit
@@ -130,6 +142,7 @@ headless: nexmon-dkms
 	[ -d pi-gen-64bit ] || git clone --branch arm64 "https://github.com/jayofelony/pi-gen.git" pi-gen-64bit
 	[ -d pi-gen-64bit ] && cd pi-gen-64bit && git pull
 	rm -rf pi-gen-64bit/stage2/EXPORT_IMAGE
+	$(PIGEN_MARGIN_FIX) pi-gen-64bit/export-image/prerun.sh
 	sed -i "s|WORK_DIR=.*|WORK_DIR=\"$(BUILD_HOME)/work-64bit\"|" config-64bit
 	sed -i "s|DEPLOY_DIR=.*|DEPLOY_DIR=\"$(IMAGE_DIR)\"|" config-64bit
 	sudo ./pi-gen-64bit/build.sh -c config-64bit
