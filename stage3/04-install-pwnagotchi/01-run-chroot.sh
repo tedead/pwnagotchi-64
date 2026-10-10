@@ -36,7 +36,10 @@ export PATH="/root/.cargo/bin:$PATH"
 source /root/.profile
 source /root/.cargo/env
 pip3 cache purge
-# [ai] pulls in numpy/gymnasium/stable-baselines3/torch so [ai] enabled = true works out of the box
+# A Pi has no NVIDIA GPU. The default PyPI torch is a CUDA build that drags in ~3.3GB of
+# nvidia-* wheels, so install the CPU-only wheel first; pip then sees torch as satisfied.
+pip3 install torch --index-url https://download.pytorch.org/whl/cpu --no-cache-dir
+# [ai] pulls in numpy/gymnasium/stable-baselines3 so [ai] enabled = true works out of the box
 pip3 install '.[ai]' --no-cache-dir
 deactivate
 
