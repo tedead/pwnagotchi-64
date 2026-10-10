@@ -9,7 +9,9 @@
 > enabled = true
 > ```
 >
-> The AI needs extra Python packages (`pip install 'pwnagotchi[ai]'`), is included in images built from this branch, and is **experimental**: upstream removed it because it destabilised the Wi-Fi firmware, and it has only been tried on one Raspberry Pi 4. Turn it off again if your Wi-Fi chip starts crashing.
+> The AI needs extra Python packages (`pip install 'pwnagotchi[ai]'`), is included in images built from this branch, and is **experimental**: upstream removed it because it reportedly destabilised the Wi-Fi firmware, and it has only been tried on one Raspberry Pi 4 so far. Turn it off again if your Wi-Fi chip starts crashing.
+>
+> 📖 **[Read AI_MODE_HARDWARE_NOTES.md](docs/AI_MODE_HARDWARE_NOTES.md) before you flip this on** — it covers the exact hardware this has been run on (an external USB adapter doing capture instead of the onboard chip, and why that setup may avoid the original Wi-Fi-firmware failure mode), a real SIGILL crash that was found and fixed getting AI mode running on a Pi 4, every patch required with full diffs, and an honest status report including the issues that are *not* fixed yet.
 >
 > Images built from this branch also boot by partition label rather than PARTUUID, use a CPU-only PyTorch, and **do not auto-update from upstream** (that would replace this fork). The `noai` branch is the AI-free version this was started from.
 >
