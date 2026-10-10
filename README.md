@@ -1,5 +1,10 @@
 # Pwnagotchi
 
+> [!WARNING]
+> ### 🤖 Running `[ai] enabled = true`? Read [**AI_MODE_HARDWARE_NOTES.md**](docs/AI_MODE_HARDWARE_NOTES.md) first.
+>
+> It covers: the exact hardware this has been verified on (an external USB capture adapter instead of the onboard Wi-Fi chip, and why that setup may avoid the original Wi-Fi-firmware failure mode) · a real SIGILL crash that was found and fixed getting AI mode running on a Pi 4 · every patch required, with full diffs · and an honest status report, including the issues that are **not** fixed yet.
+
 > **This is a modified fork** of [jayofelony/pwnagotchi](https://github.com/jayofelony/pwnagotchi), which is itself based on [evilsocket's pwnagotchi](https://github.com/evilsocket/pwnagotchi). It is not the official project and is not endorsed by its authors.
 >
 > **What's different here:** the `ai-mode` branch (the default) restores the reinforcement-learning AI that upstream removed, as an **opt-in** feature that is **off by default**. Turn it on in `/etc/pwnagotchi/config.toml`:
@@ -9,9 +14,7 @@
 > enabled = true
 > ```
 >
-> The AI needs extra Python packages (`pip install 'pwnagotchi[ai]'`), is included in images built from this branch, and is **experimental**: upstream removed it because it reportedly destabilised the Wi-Fi firmware, and it has only been tried on one Raspberry Pi 4 so far. Turn it off again if your Wi-Fi chip starts crashing.
->
-> 📖 **[Read AI_MODE_HARDWARE_NOTES.md](docs/AI_MODE_HARDWARE_NOTES.md) before you flip this on** — it covers the exact hardware this has been run on (an external USB adapter doing capture instead of the onboard chip, and why that setup may avoid the original Wi-Fi-firmware failure mode), a real SIGILL crash that was found and fixed getting AI mode running on a Pi 4, every patch required with full diffs, and an honest status report including the issues that are *not* fixed yet.
+> The AI needs extra Python packages (`pip install 'pwnagotchi[ai]'`), is included in images built from this branch, and is **experimental**: upstream removed it because it reportedly destabilised the Wi-Fi firmware, and it has only been tried on one Raspberry Pi 4 so far. Turn it off again if your Wi-Fi chip starts crashing. **See the warning above before enabling it.**
 >
 > Images built from this branch also boot by partition label rather than PARTUUID, use a CPU-only PyTorch, and **do not auto-update from upstream** (that would replace this fork). The `noai` branch is the AI-free version this was started from.
 >
