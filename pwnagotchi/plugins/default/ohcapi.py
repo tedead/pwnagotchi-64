@@ -129,26 +129,16 @@ class ohcapi(plugins.Plugin):
             # Never upload the user's own networks to a third-party cracking service.
             handshake_paths = remove_whitelisted(handshake_paths, config['main']['whitelist'])
 
-            # A .pcapng can keep growing after it was reported (bettercap appends newly
-            # captured EAPOLs/PMKIDs for the same AP/station), so track size and reprocess
-            # files that have grown since we last uploaded them, not just brand new ones.
-            handshake_new = []
-            growing = set()
-            for p in handshake_paths:
-                if p in self.skip:
-                    continue
-                try:
-                    current_size = os.path.getsize(p)
-                except OSError:
-                    continue
-                if p not in reported:
-                    handshake_new.append(p)
-                elif current_size > reported[p]:
-                    handshake_new.append(p)
-                    growing.add(p)
-            handshake_new = set(handshake_new)
             # Each handshake is uploaded exactly once, ever - never re-uploaded even if the
-            # .pcapng file grows afterward.
+            # .pcapng file grows afterward. (An earlier attempt at a size-tracking
+            # re-upload-on-growth feature lived here - it built `handshake_new` by
+            # indexing `reported` as if it were a {path: size} dict, but `reported`
+            # is a plain list everywhere else in this file (default [], .append(),
+            # set(reported)), so that block threw "list indices must be integers or
+            # slices, not String" on every call. It was also dead code regardless,
+            # since the very next line it fed into immediately overwrote its result.
+            # Removed rather than fixed in place, since the line below is the actual,
+            # working, intended behavior per its own comment.)
             handshake_new = set(handshake_paths) - set(reported) - set(self.skip)
 
             if handshake_new:

@@ -272,16 +272,20 @@ overstated as "zero issues":**
   about the `mt76x2u` driver rejecting some operation bettercap asks for, not a confirmed
   diagnosis. Self-heals, but is a real, recurring hiccup worth knowing about if you're
   running this setup.
-- **An unrelated bug in the `ohcapi.py` plugin** (the OnlineHashCrack submission pipeline):
-  `_run_tasks()` migrates its `reported` handshake-tracking field from a dict (`{path:
-  size}`) to a plain list, but a later line (`elif current_size > reported[p]`) still
-  indexes it like a dict, throwing `TypeError: list indices must be integers or slices,
-  not String` on every UI update. Caught and logged, not fatal, but it means the "re-
-  upload a `.pcapng` that grew after it was first reported" feature is currently broken.
-  Also unrelated to AI mode or Wi-Fi hardware — a plain logic bug.
+- **A bug in the `ohcapi.py` plugin** (the OnlineHashCrack submission pipeline), **now
+  fixed**: `_run_tasks()` had a dead, superseded code block left over from an abandoned
+  size-tracking re-upload feature. It indexed `reported` (a plain list everywhere else in
+  the file — default `[]`, `.append()`, `set(reported)`) as if it were a `{path: size}`
+  dict, throwing `TypeError: list indices must be integers or slices, not String` on
+  every UI update. It was also provably dead code regardless of the type bug: its result
+  was unconditionally overwritten by the very next line, which already implements the
+  actual intended behavior ("each handshake is uploaded exactly once, ever"). Removed
+  rather than patched in place, since fixing the indexing would have "fixed" code that
+  never ran anyway. Unrelated to AI mode or Wi-Fi hardware — a plain logic bug, caught by
+  this same monitoring pass.
 
-Neither of these is the SIGILL/torch issue this document is mainly about, and neither has
-caused a sustained crash loop or made the device unreachable. They're noted here so this
-write-up doesn't read as "everything is perfect" when the fuller multi-hour picture is
-"the specific AI-mode-breaking bug is fixed; a couple of smaller, pre-existing, non-fatal
-issues are still open."
+Neither of these is the SIGILL/torch issue this document is mainly about. The bettercap
+`-95` crash is noted here so this write-up doesn't read as "everything is perfect" when
+the fuller multi-hour picture is "the specific AI-mode-breaking bug is fixed, a separate
+pre-existing plugin bug found during monitoring is now fixed too, and one small,
+self-healing, pre-existing hiccup remains open."
