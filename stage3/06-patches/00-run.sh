@@ -1,5 +1,14 @@
 #!/bin/bash -e
 
+echo -e "\e[32m### Booting by partition label instead of PARTUUID ###\e[0m"
+# pi-gen later swaps these placeholders for PARTUUID=<disk id>-0N, but the first-boot
+# resize (init_resize.sh) re-rolls the disk id and rewrites cmdline.txt/fstab in a
+# separate write. If only one of them survives (seen on a USB flash drive) the root
+# partition is never found and boot drops to initramfs. Labels don't depend on the id,
+# and pi-gen's own substitution then simply finds nothing left to replace.
+sed -i 's|ROOTDEV|LABEL=rootfs|' "${ROOTFS_DIR}/boot/firmware/cmdline.txt"
+sed -i -e 's|^BOOTDEV|LABEL=bootfs|' -e 's|^ROOTDEV|LABEL=rootfs|' "${ROOTFS_DIR}/etc/fstab"
+
 echo -e "\e[32m### Installing patched files ###\e[0m"
 install -v -m 644 files/profile "${ROOTFS_DIR}/etc/profile"
 install -v -m 644 files/sudoers "${ROOTFS_DIR}/etc/sudoers"
