@@ -50,6 +50,10 @@ Multiple units within close physical proximity can "talk" to each other, adverti
 https://github.com/jayofelony/pwnagotchi/wiki 
 https://pwnagotchi.org
 
+## Setup guide
+See [docs/SETUP_AI_MODE_ALFA.md](docs/SETUP_AI_MODE_ALFA.md) for a full AI-mode +
+external ALFA adapter walkthrough.
+
 ## Links
 
 | &nbsp;    | Official Links                                           |
